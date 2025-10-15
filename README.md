@@ -6,6 +6,8 @@ AS Liao, MJ Bennington, K Dai, AB Irez, A Sun, S Schaffer, B Chopra, JM Seok, R 
 
 2025
 
+For an archived version of this repository, see [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17354785.svg)](http://dx.doi.org/10.5281/zenodo.17354785)
+
 ## Overview:
 
 This work investigates the impact of common sterilization techniques on the mechanical properties of 3D printed resins after being exposed to mammalian cell culture conditions. The analysis in this paper is based on data reported in the data descriptor Liao <i>et al.</i>, Sci. Data, 2025 [doi](https://doi.org/10.1038/s41597-025-05738-7). This repository contains the code to reproduce the results reported in this paper, along with copies of the relevant data from Liao <i>et al.</i> 2025 and the generate figures presented in this paper. These files are contained within the directory [Mechanical Analysis](https://github.com/CMU-BORG/Effects-on-Resin-Mechanical-Properties/tree/main/Mechanical%20Analysis).
