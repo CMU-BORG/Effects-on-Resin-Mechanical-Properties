@@ -1,4 +1,4 @@
-# README for Dataset Described In:
+# README for Analysis Reported In:
 
 **Impacts of sterilization method on material properties of 3D printable resins with prolonged exposure to cell culture environments**
 
