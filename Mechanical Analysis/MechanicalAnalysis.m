@@ -32,15 +32,19 @@ rigid_resin_stress_strain = load("Liao et al. 2025 - Scientific Data Datasets\Ri
 
 sterilization = {'NS','Autoclave','EtOH'};
 
-% Breaking out the data by resin
+%% Breaking out the data by resin
+
+% soft resins
 asiga_dentaGUM = soft_resin_data{3};
 formlabs_IPA = soft_resin_data{4};
 formlabs_mix = soft_resin_data{5};
 
+% rigid resin scalar metrics
 asiga_dentaGUIDE = rigid_resin_data{1};
 liqcreate_biomed = rigid_resin_data{2};
 phrozen_aqua_gray = rigid_resin_data{3};
 
+% rigid resin stress-strain data
 asiga_dentaGUIDE_data = rigid_resin_stress_strain{1};
 liqcreate_biomed_data = rigid_resin_stress_strain{2};
 phrozen_aqua_gray_data = rigid_resin_stress_strain{3};
@@ -75,6 +79,24 @@ saveas(gcf,"Output Figures\FormlabsSiliconeIPA_ModelFits.svg")
 PlotElastomerModelFits(formlabs_mix,sterilization,lines,alpha,colors)
 saveas(gcf,"Output Figures\FormlabsSiliconeMIX_ModelFits.svg")
 
+%% DentaGUM Strain Stiffening
+
+% non-sterile mean data
+lam_ns = asiga_dentaGUM{3}{1}.lam_all;
+sig_ns = asiga_dentaGUM{3}{1}.sig_mean;
+
+% ethanol/UV sterilize mean data
+lam_etoh = asiga_dentaGUM{3}{3}.lam_all;
+sig_etoh = asiga_dentaGUM{3}{3}.sig_mean;
+
+% plotting the tangent stiffness approximated using a first order finite
+% difference method
+figure; hold all
+plot(lam_ns(1:end-1),diff(sig_ns)./diff(lam_ns),'-','color',colors{1},'DisplayName',"NS")
+plot(lam_etoh(1:end-1),diff(sig_etoh)./diff(lam_etoh),'-','color',colors{3},'DisplayName',"EtOH")
+ylabel('Tangent Stiffness [MPa]')
+xlabel("Stretch [mm/mm]")
+legend()
 
 %% PLotting the mean model fits for the rigid resins under each condition
 PlotRigidTensileModelFits(asiga_dentaGUIDE,asiga_dentaGUIDE_data,sterilization,lines,alpha,colors)
@@ -86,17 +108,17 @@ saveas(gcf,"Output Figures\AsigaDentaGUIDE_ModelFits.svg")
 function PlotElastomerModelFits(dataset,sterilization,lines,alpha,colors)
 
     figure("Position",[100,100,600,400],"Color","w"); hold all
-    stats = dataset{3};
+    stats = dataset{3}; % pulling out the summary data for the given resin
 
     for k=1:length(sterilization)
+        % plotting the standard deviation region and mean response curve
+        % for each sterilization type
         fill([stats{k}.lam_all,fliplr(stats{k}.lam_all)],[stats{k}.sig_mean + stats{k}.sig_std, fliplr(stats{k}.sig_mean - stats{k}.sig_std)],colors{k},'FaceAlpha',alpha,'EdgeColor','none',"HandleVisibility","off");
         plot(stats{k}.lam_all,stats{k}.sig_mean,lines{k},'color',colors{k},"DisplayName",sterilization{k} + "  (R^2="+num2str(stats{k}.R2,3)+")","LineWidth",1.5)
     end
     xlabel("Stretch [mm/mm]")
     ylabel("Engineering Stress [MPa]")
     legend("Location","northwest")
-    %     xlim([0.5,3])
-    %     ylim([-1,5])
     set(gca,"FontSize",15)
 end
 
@@ -109,9 +131,9 @@ function PlotRigidTensileModelFits(dataset,raw_data,sterilization,lines,alpha,co
     % Tensile data
     for k=1:length(sterilization)
         E = dataset{1+k}{1};
-        stress = E'*strain;
+        stress = E'*strain; % calculating the Hookean model response for each measured modulus
     
-        stress_mean = mean(stress,1);
+        stress_mean = mean(stress,1);   % calculating mean and standard deviation stress values
         stress_std = std(stress,[],1);
 
         subplot(3,4,[1,2,5,6,9,10]); hold all
@@ -125,20 +147,15 @@ function PlotRigidTensileModelFits(dataset,raw_data,sterilization,lines,alpha,co
         legend("Location","southeast")
         set(gca,"FontSize",15)
 
-        E_mean = mean(E);
-        [~,closest_to_mean] = min(abs(E - E_mean)); % find the slope that is closest to the mean to plot as representative sample
-        strain_data = raw_data{1+k}{3}(closest_to_mean,:);
-        stress_data = raw_data{1+k}{4}(closest_to_mean,:);
-
         subplot(3,4,[4*k-1,4*k]); hold all
+        % subplot with individual sample stress strain values and mean
+        % model
         fill(100*[strain,fliplr(strain)],[stress_mean + stress_std, fliplr(stress_mean - stress_std)],colors{k},'FaceAlpha',alpha,'EdgeColor','none',"HandleVisibility","off");
         plot(100*strain,stress_mean,lines{k},'color',colors{k},"DisplayName",sterilization{k},"LineWidth",1.5)
         
-        % plot(100*strain_data,stress_data,'o','color',colors{k},"LineWidth",1.5,"HandleVisibility","off")
         for m=1:length(E)
-            closest_to_mean = m;
-            strain_data = raw_data{1+k}{3}(closest_to_mean,:);
-            stress_data = raw_data{1+k}{4}(closest_to_mean,:);
+            strain_data = raw_data{1+k}{3}(m,:);
+            stress_data = raw_data{1+k}{4}(m,:);
 
             plot(100*strain_data,stress_data,'.','color',colors{k},"HandleVisibility","off","LineWidth",1.5)
         end
@@ -148,7 +165,6 @@ function PlotRigidTensileModelFits(dataset,raw_data,sterilization,lines,alpha,co
             xlabel("Strain [%]")
         end
         ylabel({"Engineering","Stress [MPa]"})
-        % legend("Location","northwest")
         set(gca,"FontSize",11)
         
     end
